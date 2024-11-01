@@ -1448,6 +1448,8 @@ class SWEEnv(gym.Env):
             timeout_duration=10,
         )
 
+        self.logger.info("Pushing branch to remote")
+
         owner, repo, _ = parse_gh_issue_url(issue_url)
         # If `--repo_path` was specified with a different github URL, then the record will contain
         # the forking user
@@ -1492,13 +1494,15 @@ class SWEEnv(gym.Env):
             api = Github(
                 auth=Auth.Token(self._github_token),
             )
-            repo = api.get_repo(repo)
+            repo = api.get_repo(f"{owner}/{repo}")
+            self.logger.info(f"Creating PR to {repo}...")
             pr = repo.create_pull(
                 base="main",
                 head=head,
                 title=f"SWE-agent[bot] PR to fix: {issue.title}",
                 body=body,
-                draft=True)
+                draft=True
+                )
             self.logger.info(
                 f"🎉 PR created as a draft at {pr.html_url}. Please review it carefully, push "
                 "any required changes onto the branch and then click "
